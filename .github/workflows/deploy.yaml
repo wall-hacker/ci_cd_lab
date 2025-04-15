@@ -44,3 +44,42 @@ jobs:
       - name: Build binary
         run: go build -o myapp .
 
+  build:
+    # Specify the OS for the runner
+    runs-on: ubuntu-latest
+
+    # Grant write permissions to access repository contents and GitHub Container Registry
+    permissions:
+      contents: write
+      packages: write
+
+    # Run this job only after the 'compile' job completes successfully
+    needs: compile
+    if: success()
+
+    steps:
+      # Step 1: Checkout the repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up the Go environment (Go 1.22)
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      # Step 3: Log in to GitHub Container Registry (GHCR) using GitHub Actions token
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}             # GitHub username (actor triggering the workflow)
+          password: ${{ secrets.GITHUB_TOKEN }}     # Automatically provided GitHub token
+
+      # Step 4: Build the Docker image and tag it with the repository name and 'latest'
+      - name: Build Docker image
+        run: docker build -t ghcr.io/${{ github.repository }}:latest .
+
+      # Step 5: Push the Docker image to GitHub Container Registry
+      - name: Push Docker image
+        run: docker push ghcr.io/${{ github.repository }}:latest
