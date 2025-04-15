@@ -14,7 +14,7 @@ jobs:
       - name: Install dependencies
         run: go mod download
 
-      # ✅ TODO 01 - Add a step to run tests :)
+      # ✅ TODO 01 - Add a step to run tests
       - name: Run tests
         run: go test ./...
 
