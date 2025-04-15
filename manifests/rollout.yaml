@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: go-simple-webserver
+  labels:
+    app: go-simple-webserver
+spec:
+  replicas: 10
+  strategy:
+    canary:
+      steps:
+        - setWeight: 50
+        - pause: { duration: 60s }
+        - setWeight: 100
+  selector:
+    matchLabels:
+      app: go-simple-webserver
+  template:
+    metadata:
+      labels:
+        app: go-simple-webserver
+    spec:
+      containers:
+        - name: webserver
+          image: ghcr.io/wall-hacker/ci_cd_lab:latest
+          ports:
+            - containerPort: 8080
+          imagePullPolicy: Always
